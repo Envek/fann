@@ -96,5 +96,10 @@ FANN_EXTERNAL int FANN_API fann_save(struct fann *ann, const char *configuration
    This function appears in FANN >= 1.0.0.
 */ 
 FANN_EXTERNAL int FANN_API fann_save_to_fixed(struct fann *ann, const char *configuration_file);
+
+/* INTERNAL FUNCTION
+	Parses a number, whatever its type is, with a space after it
+*/
+char fann_scanvalue(FILE *conf, char *type, void *val);
 	
 #endif

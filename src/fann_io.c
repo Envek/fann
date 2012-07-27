@@ -75,6 +75,29 @@ int fann_save_internal(struct fann *ann, const char *configuration_file, unsigne
 	return retval;
 }
 
+#define FANN_FPRINTPARAM(name, type, value) \
+{ \
+	snprintf(tmp, 64, (type), (value)); \
+	char *commaPtr = strchr(tmp, ','); \
+	if(commaPtr) { *commaPtr = '.'; } \
+	fprintf(conf, "%s=%s\n", name, tmp); \
+}
+
+#define FANN_FPRINTVALUE(type, value) \
+{ \
+	snprintf(tmp, 64, (type), (value)); \
+	char *commaPtr = strchr(tmp, ','); \
+	if(commaPtr) { *commaPtr = '.'; } \
+	fprintf(conf, "%s ", tmp); \
+}
+
+#define FANN_SPRINTF(type, value) \
+{ \
+	snprintf(tmp, 64, (type), (value)); \
+	char *commaPtr = strchr(tmp, ','); \
+	if(commaPtr) { *commaPtr = '.'; } \
+}
+
 /* INTERNAL FUNCTION
    Used to save the network to a file descriptor.
  */
@@ -87,6 +110,7 @@ int fann_save_internal_fd(struct fann *ann, FILE * conf, const char *configurati
 	fann_type *weights;
 	struct fann_neuron **connected_neurons;
 	unsigned int i = 0;
+	char tmp[64];
 
 #ifndef FIXEDFANN
 	/* variabels for use when saving floats as fixed point variabels */
@@ -175,63 +199,63 @@ int fann_save_internal_fd(struct fann *ann, FILE * conf, const char *configurati
 #endif
 
 	/* Save network parameters */
-	fprintf(conf, "num_layers=%d\n", (int)(ann->last_layer - ann->first_layer));
-	fprintf(conf, "learning_rate=%f\n", ann->learning_rate);
-	fprintf(conf, "connection_rate=%f\n", ann->connection_rate);
-	fprintf(conf, "network_type=%u\n", ann->network_type);
+	FANN_FPRINTPARAM("num_layers", "%u", (int)(ann->last_layer - ann->first_layer))
+	FANN_FPRINTPARAM("learning_rate", "%f", ann->learning_rate)
+	FANN_FPRINTPARAM("connection_rate", "%f", ann->connection_rate)
+	FANN_FPRINTPARAM("network_type", "%u", ann->network_type)
 	
-	fprintf(conf, "learning_momentum=%f\n", ann->learning_momentum);
-	fprintf(conf, "training_algorithm=%u\n", ann->training_algorithm);
-	fprintf(conf, "train_error_function=%u\n", ann->train_error_function);
-	fprintf(conf, "train_stop_function=%u\n", ann->train_stop_function);
-	fprintf(conf, "cascade_output_change_fraction=%f\n", ann->cascade_output_change_fraction);
-	fprintf(conf, "quickprop_decay=%f\n", ann->quickprop_decay);
-	fprintf(conf, "quickprop_mu=%f\n", ann->quickprop_mu);
-	fprintf(conf, "rprop_increase_factor=%f\n", ann->rprop_increase_factor);
-	fprintf(conf, "rprop_decrease_factor=%f\n", ann->rprop_decrease_factor);
-	fprintf(conf, "rprop_delta_min=%f\n", ann->rprop_delta_min);
-	fprintf(conf, "rprop_delta_max=%f\n", ann->rprop_delta_max);
-	fprintf(conf, "rprop_delta_zero=%f\n", ann->rprop_delta_zero);
-	fprintf(conf, "cascade_output_stagnation_epochs=%u\n", ann->cascade_output_stagnation_epochs);
-	fprintf(conf, "cascade_candidate_change_fraction=%f\n", ann->cascade_candidate_change_fraction);
-	fprintf(conf, "cascade_candidate_stagnation_epochs=%u\n", ann->cascade_candidate_stagnation_epochs);
-	fprintf(conf, "cascade_max_out_epochs=%u\n", ann->cascade_max_out_epochs);
-	fprintf(conf, "cascade_min_out_epochs=%u\n", ann->cascade_min_out_epochs);
-	fprintf(conf, "cascade_max_cand_epochs=%u\n", ann->cascade_max_cand_epochs);	
-	fprintf(conf, "cascade_min_cand_epochs=%u\n", ann->cascade_min_cand_epochs);	
-	fprintf(conf, "cascade_num_candidate_groups=%u\n", ann->cascade_num_candidate_groups);
+	FANN_FPRINTPARAM("learning_momentum", "%f", ann->learning_momentum)
+	FANN_FPRINTPARAM("training_algorithm", "%u", ann->training_algorithm)
+	FANN_FPRINTPARAM("train_error_function", "%u", ann->train_error_function)
+	FANN_FPRINTPARAM("train_stop_function", "%u", ann->train_stop_function)
+	FANN_FPRINTPARAM("cascade_output_change_fraction", "%f", ann->cascade_output_change_fraction)
+	FANN_FPRINTPARAM("quickprop_decay", "%f", ann->quickprop_decay)
+	FANN_FPRINTPARAM("quickprop_mu", "%f", ann->quickprop_mu)
+	FANN_FPRINTPARAM("rprop_increase_factor", "%f", ann->rprop_increase_factor)
+	FANN_FPRINTPARAM("rprop_decrease_factor", "%f", ann->rprop_decrease_factor)
+	FANN_FPRINTPARAM("rprop_delta_min", "%f", ann->rprop_delta_min)
+	FANN_FPRINTPARAM("rprop_delta_max", "%f", ann->rprop_delta_max)
+	FANN_FPRINTPARAM("rprop_delta_zero", "%f", ann->rprop_delta_zero)
+	FANN_FPRINTPARAM("cascade_output_stagnation_epochs", "%u", ann->cascade_output_stagnation_epochs)
+	FANN_FPRINTPARAM("cascade_candidate_change_fraction", "%f", ann->cascade_candidate_change_fraction)
+	FANN_FPRINTPARAM("cascade_candidate_stagnation_epochs", "%u", ann->cascade_candidate_stagnation_epochs)
+	FANN_FPRINTPARAM("cascade_max_out_epochs", "%u", ann->cascade_max_out_epochs)
+	FANN_FPRINTPARAM("cascade_min_out_epochs", "%u", ann->cascade_min_out_epochs)
+	FANN_FPRINTPARAM("cascade_max_cand_epochs", "%u", ann->cascade_max_cand_epochs)
+	FANN_FPRINTPARAM("cascade_min_cand_epochs", "%u", ann->cascade_min_cand_epochs)
+	FANN_FPRINTPARAM("cascade_num_candidate_groups", "%u", ann->cascade_num_candidate_groups)
 
 #ifndef FIXEDFANN
 	if(save_as_fixed)
 	{
-		fprintf(conf, "bit_fail_limit=%u\n", (int) floor((ann->bit_fail_limit * fixed_multiplier) + 0.5));
-		fprintf(conf, "cascade_candidate_limit=%u\n", (int) floor((ann->cascade_candidate_limit * fixed_multiplier) + 0.5));
-		fprintf(conf, "cascade_weight_multiplier=%u\n", (int) floor((ann->cascade_weight_multiplier * fixed_multiplier) + 0.5));
+		FANN_FPRINTPARAM("bit_fail_limit", "%u", (int) floor((ann->bit_fail_limit * fixed_multiplier) + 0.5))
+		FANN_FPRINTPARAM("cascade_candidate_limit", "%u", (int) floor((ann->cascade_candidate_limit * fixed_multiplier) + 0.5))
+		FANN_FPRINTPARAM("cascade_weight_multiplier", "%u", (int) floor((ann->cascade_weight_multiplier * fixed_multiplier) + 0.5))
 	}
 	else
 #endif	
 	{
-		fprintf(conf, "bit_fail_limit="FANNPRINTF"\n", ann->bit_fail_limit);
-		fprintf(conf, "cascade_candidate_limit="FANNPRINTF"\n", ann->cascade_candidate_limit);
-		fprintf(conf, "cascade_weight_multiplier="FANNPRINTF"\n", ann->cascade_weight_multiplier);
+		FANN_FPRINTPARAM("bit_fail_limit", FANNPRINTF, ann->bit_fail_limit)
+		FANN_FPRINTPARAM("cascade_candidate_limit", FANNPRINTF, ann->cascade_candidate_limit)
+		FANN_FPRINTPARAM("cascade_weight_multiplier", FANNPRINTF, ann->cascade_weight_multiplier)
 	}
 
-	fprintf(conf, "cascade_activation_functions_count=%u\n", ann->cascade_activation_functions_count);
+	FANN_FPRINTPARAM("cascade_activation_functions_count", "%u", ann->cascade_activation_functions_count)
 	fprintf(conf, "cascade_activation_functions=");
 	for(i = 0; i < ann->cascade_activation_functions_count; i++)
-		fprintf(conf, "%u ", ann->cascade_activation_functions[i]);
+		FANN_FPRINTVALUE("%u", ann->cascade_activation_functions[i])
 	fprintf(conf, "\n");
 	
-	fprintf(conf, "cascade_activation_steepnesses_count=%u\n", ann->cascade_activation_steepnesses_count);
+	FANN_FPRINTPARAM("cascade_activation_steepnesses_count", "%u", ann->cascade_activation_steepnesses_count)
 	fprintf(conf, "cascade_activation_steepnesses=");
 	for(i = 0; i < ann->cascade_activation_steepnesses_count; i++)
 	{
 #ifndef FIXEDFANN
 		if(save_as_fixed)
-			fprintf(conf, "%u ", (int) floor((ann->cascade_activation_steepnesses[i] * fixed_multiplier) + 0.5));
+			FANN_FPRINTVALUE("%u", (int) floor((ann->cascade_activation_steepnesses[i] * fixed_multiplier) + 0.5))
 		else
 #endif	
-			fprintf(conf, FANNPRINTF" ", ann->cascade_activation_steepnesses[i]);
+			FANN_FPRINTVALUE(FANNPRINTF, ann->cascade_activation_steepnesses[i])
 	}
 	fprintf(conf, "\n");
 
@@ -239,7 +263,7 @@ int fann_save_internal_fd(struct fann *ann, FILE * conf, const char *configurati
 	for(layer_it = ann->first_layer; layer_it != ann->last_layer; layer_it++)
 	{
 		/* the number of neurons in the layers (in the last layer, there is always one too many neurons, because of an unused bias) */
-		fprintf(conf, "%d ", (int)(layer_it->last_neuron - layer_it->first_neuron));
+		FANN_FPRINTVALUE("%u", (int)(layer_it->last_neuron - layer_it->first_neuron))
 	}
 	fprintf(conf, "\n");
 
@@ -248,7 +272,7 @@ int fann_save_internal_fd(struct fann *ann, FILE * conf, const char *configurati
 	#define SCALE_SAVE( what, where )										\
 		fprintf( conf, #what "_" #where "=" );								\
 		for( i = 0; i < ann->num_##where##put; i++ )						\
-			fprintf( conf, "%f ", ann->what##_##where[ i ] );				\
+			FANN_FPRINTVALUE("%f", ann->what##_##where[ i ] );				\
 		fprintf( conf, "\n" );
 
 	if(!save_as_fixed)
@@ -288,12 +312,14 @@ int fann_save_internal_fd(struct fann *ann, FILE * conf, const char *configurati
 			}
 			else
 			{
-				fprintf(conf, "(%u, %u, " FANNPRINTF ") ", neuron_it->last_con - neuron_it->first_con,
-						neuron_it->activation_function, neuron_it->activation_steepness);
+				FANN_SPRINTF(FANNPRINTF, neuron_it->activation_steepness)
+				fprintf(conf, "(%u, %u, %s) ", neuron_it->last_con - neuron_it->first_con,
+						neuron_it->activation_function, tmp);
 			}
 #else
-			fprintf(conf, "(%u, %u, " FANNPRINTF ") ", neuron_it->last_con - neuron_it->first_con,
-					neuron_it->activation_function, neuron_it->activation_steepness);
+			FANN_SPRINTF(FANNPRINTF, neuron_it->activation_steepness)
+			fprintf(conf, "(%u, %u, %s) ", neuron_it->last_con - neuron_it->first_con,
+					neuron_it->activation_function, tmp);
 #endif
 		}
 	}
@@ -326,11 +352,13 @@ int fann_save_internal_fd(struct fann *ann, FILE * conf, const char *configurati
 		else
 		{
 			/* save the connection "(source weight) " */
-			fprintf(conf, "(%d, " FANNPRINTF ") ", (int)(connected_neurons[i] - first_neuron), weights[i]);
+			FANN_SPRINTF(FANNPRINTF, weights[i])
+			fprintf(conf, "(%u, %s) ", (int)(connected_neurons[i] - first_neuron), tmp);
 		}
 #else
 		/* save the connection "(source weight) " */
-		fprintf(conf, "(%d, " FANNPRINTF ") ", (int)(connected_neurons[i] - first_neuron), weights[i]);
+		FANN_SPRINTF(FANNPRINTF, weights[i])
+		fprintf(conf, "(%u, %s) ", (int)(connected_neurons[i] - first_neuron), tmp);
 #endif
 
 	}
@@ -341,14 +369,187 @@ int fann_save_internal_fd(struct fann *ann, FILE * conf, const char *configurati
 
 struct fann *fann_create_from_fd_1_1(FILE * conf, const char *configuration_file);
 
-#define fann_scanf(type, name, val) \
+#define IS_NUMERIC(a_char)     (a_char >= '0' && a_char <= '9')
+#define IS_SEPARATOR(a_char)   (a_char == '.')
+#define IS_EXPONENTIAL(a_char) (a_char == 'e' || a_char == 'E')
+#define IS_SIGN(a_char)        (a_char == '-' || a_char == '+')
+
+/* INTERNAL FUNCTION
+	Parses a float in a fixed way, so that it doesn't rely on current culture.
+	Numbers may be written as : "2", "-2.12", "22.135", "2e-4", "22.3e+8", "11e3"
+ */
+char fann_scanfloat(char *string, float *val)
+{
+  float result = 0.0f;
+  float global_sign = 1.0f;
+  float decimal, exp_sign, multiplier;
+  char current_char;
+  unsigned int current_index = 0;
+  size_t size = 0;
+ 
+  size = strlen(string);
+ 
+  if(size == 0)
+  {
+#ifdef DEBUG
+	 printf("Float parsing error: there should be at least one character !\n");
+#endif
+	 return 0;
+  }
+ 
+  current_char = string[current_index];
+  if(!IS_SIGN(current_char) && !IS_NUMERIC(current_char))
+  {
+#ifdef DEBUG
+	 printf("Float parsing error: the first character should be a digit or a sign !\n");
+#endif
+	 return 0;
+  }
+ 
+  if(IS_SIGN(current_char))
+  {
+	 if(current_char == '-')
+	 {
+		global_sign = -1.0f;
+	 }
+	 current_char = string[++current_index];
+  }
+ 
+  while(IS_NUMERIC(current_char) && current_index < size)
+  {
+	 result *= 10.0f;
+	 if(current_char != '0')
+	 {
+		result += current_char - '0';
+	 }
+	
+	 current_char = string[++current_index];
+  }
+ 
+  if(current_index == size)
+  {
+	 *val = result * global_sign;
+	 return 1;
+  }
+ 
+  if(!IS_SEPARATOR(current_char) && !IS_EXPONENTIAL(current_char))
+  {
+#ifdef DEBUG
+	 printf("Float parsing error: the character after the first numbers groups should be a decimal separator or an exponential notation !\n");
+#endif
+	 return 0;
+  }
+ 
+  if(IS_SEPARATOR(current_char))
+  {
+	 decimal = 0.1f;
+	
+	 current_char = string[++current_index];
+	 while(IS_NUMERIC(current_char) && current_index < size)
+	 {
+		if(current_char != '0')
+		{
+		  result += (current_char - '0') * decimal;
+		}
+		decimal /= 10.0f;
+	  
+		current_char = string[++current_index];
+	 }
+  }
+ 
+  if(current_index == size || !IS_EXPONENTIAL(current_char))
+  {
+	 *val = result * global_sign;
+	 return 1;
+  }
+ 
+  current_char = string[++current_index];
+ 
+  if(current_index == size || (!IS_SIGN(current_char) && !IS_NUMERIC(current_char)))
+  {
+#ifdef DEBUG
+	 printf("Float parsing error: There should be numbers or a sign after the exponential notation\n");
+#endif
+	 return 0;
+  }
+ 
+  exp_sign = 1.0f;
+  if(IS_SIGN(current_char))
+  {
+	 if(current_char == '-')
+	 {
+		exp_sign = -1.0f;
+	 }
+	
+	 current_char = string[++current_index];
+  }
+ 
+  if(current_index == size || !IS_NUMERIC(current_char))
+  {
+#ifdef DEBUG
+	 printf("Float parsing error: There should be numbers after the exponential sign\n");
+#endif
+	 return 0;
+  }
+ 
+  multiplier = 0.0f;
+  while(IS_NUMERIC(current_char) && current_index < size)
+  {
+	 multiplier *= 10.0f;
+	 if(current_char != '0')
+	 {
+		multiplier += current_char - '0';
+	 }
+	
+	 current_char = string[++current_index];
+  }
+ 
+  result *= powf(10.0f, multiplier * exp_sign);
+ 
+  *val = result * global_sign;
+  return 1;
+}
+
+/* INTERNAL FUNCTION
+	Parses a number, whatever its type is, without relying on the current culture
+ */
+char fann_sscanf(char *strVal, char *type, void *val)
+{
+  if(!strcmp(type, "%f"))
+  {
+	 return fann_scanfloat(strVal, (float*)val);
+  }
+  else
+  {
+	 return sscanf(strVal, type, val);
+  }
+}
+
+/* INTERNAL FUNCTION
+	Parses a number, whatever its type is, with a space after it
+ */
+char fann_scanvalue(FILE *conf, char *type, void *val)
+{
+  char tmpStr[64];
+ 
+  if(fscanf(conf, "%s ", tmpStr) != 1)
+  {
+	 return 0;
+  }
+ 
+  return fann_sscanf(tmpStr, type, val);
+}
+
+#define FANN_SCANPARAM(type, name, val) \
 { \
-	if(fscanf(conf, name"="type"\n", val) != 1) \
-	{ \
-		fann_error(NULL, FANN_E_CANT_READ_CONFIG, name, configuration_file); \
-		fann_destroy(ann); \
-		return NULL; \
-	} \
+  char tmpVal[64]; \
+  \
+  if(fscanf(conf, name"=%s\n", tmpVal) != 1 || !fann_sscanf(tmpVal, type, val)) \
+  { \
+	 fann_error(NULL, FANN_E_CANT_READ_CONFIG, name, configuration_file); \
+	 fann_destroy(ann); \
+	 return NULL; \
+  } \
 }
 
 #define fann_skip(name) \
@@ -378,6 +579,7 @@ struct fann *fann_create_from_fd(FILE * conf, const char *configuration_file)
 	struct fann_layer *layer_it;
 	struct fann *ann = NULL;
 
+  char tmpStr[64];
 	char *read_version;
 
 	read_version = (char *) calloc(strlen(FANN_CONF_VERSION "\n"), 1);
@@ -426,11 +628,11 @@ struct fann *fann_create_from_fd(FILE * conf, const char *configuration_file)
 	free(read_version);
 
 #ifdef FIXEDFANN
-	fann_scanf("%u", "decimal_point", &decimal_point);
+	FANN_SCANPARAM("%u", "decimal_point", &decimal_point)
 	multiplier = 1 << decimal_point;
 #endif
 
-	fann_scanf("%u", "num_layers", &num_layers);
+	FANN_SCANPARAM("%u", "num_layers", &num_layers)
 
 	ann = fann_allocate_structure(num_layers);
 	if(ann == NULL)
@@ -438,40 +640,40 @@ struct fann *fann_create_from_fd(FILE * conf, const char *configuration_file)
 		return NULL;
 	}
 
-	fann_scanf("%f", "learning_rate", &ann->learning_rate);
-	fann_scanf("%f", "connection_rate", &ann->connection_rate);
-	fann_scanf("%u", "network_type", &tmpVal);
+
+	FANN_SCANPARAM("%f", "learning_rate", &ann->learning_rate)
+	FANN_SCANPARAM("%f", "connection_rate", &ann->connection_rate)
+	FANN_SCANPARAM("%u", "network_type", &tmpVal)
 	ann->network_type = (enum fann_nettype_enum)tmpVal;
-	fann_scanf("%f", "learning_momentum", &ann->learning_momentum);
-	fann_scanf("%u", "training_algorithm", &tmpVal);
+	FANN_SCANPARAM("%f", "learning_momentum", &ann->learning_momentum)
+	FANN_SCANPARAM("%u", "training_algorithm", &tmpVal)
 	ann->training_algorithm = (enum fann_train_enum)tmpVal;
-	fann_scanf("%u", "train_error_function", &tmpVal);
+	FANN_SCANPARAM("%u", "train_error_function", &tmpVal)
 	ann->train_error_function = (enum fann_errorfunc_enum)tmpVal;
-	fann_scanf("%u", "train_stop_function", &tmpVal);
+	FANN_SCANPARAM("%u", "train_stop_function", &tmpVal)
 	ann->train_stop_function = (enum fann_stopfunc_enum)tmpVal;
-	fann_scanf("%f", "cascade_output_change_fraction", &ann->cascade_output_change_fraction);
-	fann_scanf("%f", "quickprop_decay", &ann->quickprop_decay);
-	fann_scanf("%f", "quickprop_mu", &ann->quickprop_mu);
-	fann_scanf("%f", "rprop_increase_factor", &ann->rprop_increase_factor);
-	fann_scanf("%f", "rprop_decrease_factor", &ann->rprop_decrease_factor);
-	fann_scanf("%f", "rprop_delta_min", &ann->rprop_delta_min);
-	fann_scanf("%f", "rprop_delta_max", &ann->rprop_delta_max);
-	fann_scanf("%f", "rprop_delta_zero", &ann->rprop_delta_zero);
-	fann_scanf("%u", "cascade_output_stagnation_epochs", &ann->cascade_output_stagnation_epochs);
-	fann_scanf("%f", "cascade_candidate_change_fraction", &ann->cascade_candidate_change_fraction);
-	fann_scanf("%u", "cascade_candidate_stagnation_epochs", &ann->cascade_candidate_stagnation_epochs);
-	fann_scanf("%u", "cascade_max_out_epochs", &ann->cascade_max_out_epochs);
-	fann_scanf("%u", "cascade_min_out_epochs", &ann->cascade_min_out_epochs);
-	fann_scanf("%u", "cascade_max_cand_epochs", &ann->cascade_max_cand_epochs);	
-	fann_scanf("%u", "cascade_min_cand_epochs", &ann->cascade_min_cand_epochs);	
-	fann_scanf("%u", "cascade_num_candidate_groups", &ann->cascade_num_candidate_groups);
+	FANN_SCANPARAM("%f", "cascade_output_change_fraction", &ann->cascade_output_change_fraction)
+	FANN_SCANPARAM("%f", "quickprop_decay", &ann->quickprop_decay)
+	FANN_SCANPARAM("%f", "quickprop_mu", &ann->quickprop_mu)
+	FANN_SCANPARAM("%f", "rprop_increase_factor", &ann->rprop_increase_factor)
+	FANN_SCANPARAM("%f", "rprop_decrease_factor", &ann->rprop_decrease_factor)
+	FANN_SCANPARAM("%f", "rprop_delta_min", &ann->rprop_delta_min)
+	FANN_SCANPARAM("%f", "rprop_delta_max", &ann->rprop_delta_max)
+	FANN_SCANPARAM("%f", "rprop_delta_zero", &ann->rprop_delta_zero)
+	FANN_SCANPARAM("%u", "cascade_output_stagnation_epochs", &ann->cascade_output_stagnation_epochs)
+	FANN_SCANPARAM("%f", "cascade_candidate_change_fraction", &ann->cascade_candidate_change_fraction)
+	FANN_SCANPARAM("%u", "cascade_candidate_stagnation_epochs", &ann->cascade_candidate_stagnation_epochs)
+	FANN_SCANPARAM("%u", "cascade_max_out_epochs", &ann->cascade_max_out_epochs)
+	FANN_SCANPARAM("%u", "cascade_min_out_epochs", &ann->cascade_min_out_epochs)
+	FANN_SCANPARAM("%u", "cascade_max_cand_epochs", &ann->cascade_max_cand_epochs)
+	FANN_SCANPARAM("%u", "cascade_min_cand_epochs", &ann->cascade_min_cand_epochs)	
+	FANN_SCANPARAM("%u", "cascade_num_candidate_groups", &ann->cascade_num_candidate_groups)
 
-	fann_scanf(FANNSCANF, "bit_fail_limit", &ann->bit_fail_limit);
-	fann_scanf(FANNSCANF, "cascade_candidate_limit", &ann->cascade_candidate_limit);
-	fann_scanf(FANNSCANF, "cascade_weight_multiplier", &ann->cascade_weight_multiplier);
+	FANN_SCANPARAM(FANNSCANF, "bit_fail_limit", &ann->bit_fail_limit)
+	FANN_SCANPARAM(FANNSCANF, "cascade_candidate_limit", &ann->cascade_candidate_limit)
+	FANN_SCANPARAM(FANNSCANF, "cascade_weight_multiplier", &ann->cascade_weight_multiplier)
 
-
-	fann_scanf("%u", "cascade_activation_functions_count", &ann->cascade_activation_functions_count);
+	FANN_SCANPARAM("%u", "cascade_activation_functions_count", &ann->cascade_activation_functions_count)
 
 	/* reallocate mem */
 	ann->cascade_activation_functions = 
@@ -496,7 +698,7 @@ struct fann *fann_create_from_fd(FILE * conf, const char *configuration_file)
 		}
 	}
 
-	fann_scanf("%u", "cascade_activation_steepnesses_count", &ann->cascade_activation_steepnesses_count);
+	FANN_SCANPARAM("%u", "cascade_activation_steepnesses_count", &ann->cascade_activation_steepnesses_count)
 
 	/* reallocate mem */
 	ann->cascade_activation_steepnesses = 
@@ -512,7 +714,7 @@ struct fann *fann_create_from_fd(FILE * conf, const char *configuration_file)
 	fann_skip("cascade_activation_steepnesses=");
 	for(i = 0; i < ann->cascade_activation_steepnesses_count; i++) 
 	{
-		if(fscanf(conf, FANNSCANF" ", &ann->cascade_activation_steepnesses[i]) != 1)
+		if(fann_scanvalue(conf, FANNSCANF, &ann->cascade_activation_steepnesses[i]) != 1)
 		{
 			fann_error(NULL, FANN_E_CANT_READ_CONFIG, "cascade_activation_steepnesses", configuration_file);
 			fann_destroy(ann);
@@ -538,7 +740,7 @@ struct fann *fann_create_from_fd(FILE * conf, const char *configuration_file)
 	/* determine how many neurons there should be in each layer */
 	for(layer_it = ann->first_layer; layer_it != ann->last_layer; layer_it++)
 	{
-		if(fscanf(conf, "%u ", &layer_size) != 1)
+		if(!fann_scanvalue(conf, "%u", &layer_size))
 		{
 			fann_error((struct fann_error *) ann, FANN_E_CANT_READ_CONFIG, "layer_sizes", configuration_file);
 			fann_destroy(ann);
@@ -574,7 +776,7 @@ struct fann *fann_create_from_fd(FILE * conf, const char *configuration_file)
 	fann_skip( #what "_" #where "=" );									\
 	for(i = 0; i < ann->num_##where##put; i++)								\
 	{																		\
-		if(fscanf( conf, "%f ", (float *)&ann->what##_##where[ i ] ) != 1)  \
+		if(fann_scanvalue(conf, "%f", (float *)&ann->what##_##where[ i ] ) != 1)  \
 		{																	\
 			fann_error((struct fann_error *) ann, FANN_E_CANT_READ_CONFIG, #what "_" #where, configuration_file); \
 			fann_destroy(ann); 												\
@@ -610,9 +812,8 @@ struct fann *fann_create_from_fd(FILE * conf, const char *configuration_file)
 	fann_skip("neurons (num_inputs, activation_function, activation_steepness)=");
 	for(neuron_it = ann->first_layer->first_neuron; neuron_it != last_neuron; neuron_it++)
 	{
-		if(fscanf
-		   (conf, "(%u, %u, " FANNSCANF ") ", &num_connections, &tmpVal,
-			&neuron_it->activation_steepness) != 3)
+		if(fscanf(conf, "(%u, %u, %s ", &num_connections, (unsigned int *)&neuron_it->activation_function, tmpStr) != 3 ||
+			!fann_sscanf(tmpStr, FANNSCANF, &neuron_it->activation_steepness))
 		{
 			fann_error((struct fann_error *) ann, FANN_E_CANT_READ_NEURON, configuration_file);
 			fann_destroy(ann);
@@ -638,7 +839,7 @@ struct fann *fann_create_from_fd(FILE * conf, const char *configuration_file)
 	fann_skip("connections (connected_to_neuron, weight)=");
 	for(i = 0; i < ann->total_connections; i++)
 	{
-		if(fscanf(conf, "(%u, " FANNSCANF ") ", &input_neuron, &weights[i]) != 2)
+		if(fscanf(conf, "(%u, %s ", &input_neuron, tmpStr) != 2 || !fann_sscanf(tmpStr, FANNSCANF, &weights[i]))
 		{
 			fann_error((struct fann_error *) ann, FANN_E_CANT_READ_CONNECTIONS, configuration_file);
 			fann_destroy(ann);

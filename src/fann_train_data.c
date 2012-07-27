@@ -873,7 +873,7 @@ struct fann_train_data *fann_read_train_from_fd(FILE * file, const char *filenam
 	{
 		for(j = 0; j != num_input; j++)
 		{
-			if(fscanf(file, FANNSCANF " ", &data->input[i][j]) != 1)
+			if(!fann_scanvalue(file, FANNSCANF, &data->input[i][j]))
 			{
 				fann_error(NULL, FANN_E_CANT_READ_TD, filename, line);
 				fann_destroy_train(data);
@@ -884,7 +884,7 @@ struct fann_train_data *fann_read_train_from_fd(FILE * file, const char *filenam
 
 		for(j = 0; j != num_output; j++)
 		{
-			if(fscanf(file, FANNSCANF " ", &data->output[i][j]) != 1)
+			if(!fann_scanvalue(file, FANNSCANF, &data->output[i][j]))
 			{
 				fann_error(NULL, FANN_E_CANT_READ_TD, filename, line);
 				fann_destroy_train(data);
